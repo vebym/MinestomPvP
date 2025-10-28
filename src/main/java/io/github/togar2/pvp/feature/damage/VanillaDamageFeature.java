@@ -35,6 +35,7 @@ import net.minestom.server.network.packet.server.play.SoundEffectPacket;
 import net.minestom.server.potion.PotionEffect;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
@@ -101,14 +102,17 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 		LivingEntity entity = event.getEntity();
 		Damage damage = event.getDamage();
 		Entity attacker = damage.getAttacker();
+
+		@Nullable Player player = entity instanceof Player p ? p : null;
 		
 		DamageType damageType = MinecraftServer.getDamageTypeRegistry().get(damage.getType());
 		assert damageType != null;
 		
 		DamageTypeInfo typeInfo = DamageTypeInfo.of(damage.getType());
-		if (event.getEntity() instanceof Player player && typeInfo.shouldScaleWithDifficulty(damage))
+		if (player != null && typeInfo.shouldScaleWithDifficulty(damage)) {
 			damage.setAmount(scaleWithDifficulty(player, damage.getAmount()));
-		
+		}
+
 		if (typeInfo.fire() && entity.hasEffect(PotionEffect.FIRE_RESISTANCE)) {
 			event.setCancelled(true);
 			return;
@@ -135,7 +139,9 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 		}
 		
 		float amountBeforeProcessing = amount;
-		
+
+		// TODO FIXME dealing damage during invulnerability triggers a second tilt animation,
+		//  that doesn't happen on vanilla.
 		// Invulnerability ticks
 		boolean hurtSoundAndAnimation = true;
 		long newDamageTime = entity.hasTag(NEW_DAMAGE_TIME) ? entity.getTag(NEW_DAMAGE_TIME) : -10000;
@@ -167,13 +173,15 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 		
 		// Register damage to tracking feature
 		boolean register = version.legacy() || amount > 0;
-		if (register && entity instanceof Player player)
+		if (register && player != null) {
 			trackingFeature.recordDamage(player, attacker, damage);
-		
+		}
+
 		// Exhaustion from damage
-		if (amountBeforeProcessing != 0 && entity instanceof Player player)
+		if (amountBeforeProcessing != 0 && player != null) {
 			exhaustionFeature.addDamageExhaustion(player, damageType);
-		
+		}
+
 		if (register) entity.setTag(LAST_DAMAGE_AMOUNT, amountBeforeProcessing);
 		
 		if (hurtSoundAndAnimation) {
@@ -209,11 +217,10 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 		}
 		
 		boolean death = false;
-		float totalHealth = entity.getHealth() +
-				(entity instanceof Player player ? player.getAdditionalHearts() : 0);
+		float totalHealth = entity.getHealth() + (player != null ? player.getAdditionalHearts() : 0);
 		if (totalHealth - amount <= 0) {
 			boolean totem = totemFeature.tryProtect(entity, damageType);
-			
+
 			if (totem) {
 				event.setCancelled(true);
 			} else {
@@ -223,20 +230,22 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 					sound = entity instanceof Player ? SoundEvent.ENTITY_PLAYER_DEATH : SoundEvent.ENTITY_GENERIC_DEATH;
 				}
 			}
-		} else if (hurtSoundAndAnimation) {
+		} else if (
+			hurtSoundAndAnimation &&
+			(entity instanceof Player) &&
+			sound == SoundEvent.ENTITY_PLAYER_HURT
+		) {
 			// Workaround to have different types make a different sound,
 			// but only if the sound has not been changed by damage#getSound
-			if (entity instanceof Player && sound == SoundEvent.ENTITY_PLAYER_HURT) {
-				String effects = damageType.effects();
-				if (effects != null) sound = switch (effects) {
-					case "thorns" -> SoundEvent.ENCHANT_THORNS_HIT;
-					case "drowning" -> SoundEvent.ENTITY_PLAYER_HURT_DROWN;
-					case "burning" -> SoundEvent.ENTITY_PLAYER_HURT_ON_FIRE;
-					case "poking" -> SoundEvent.ENTITY_PLAYER_HURT_SWEET_BERRY_BUSH;
-					case "freezing" -> SoundEvent.ENTITY_PLAYER_HURT_FREEZE;
-					default -> sound;
-				};
-			}
+			String effects = damageType.effects();
+			if (effects != null) sound = switch (effects) {
+				case "thorns" -> SoundEvent.ENCHANT_THORNS_HIT;
+				case "drowning" -> SoundEvent.ENTITY_PLAYER_HURT_DROWN;
+				case "burning" -> SoundEvent.ENTITY_PLAYER_HURT_ON_FIRE;
+				case "poking" -> SoundEvent.ENTITY_PLAYER_HURT_SWEET_BERRY_BUSH;
+				case "freezing" -> SoundEvent.ENTITY_PLAYER_HURT_FREEZE;
+				default -> sound;
+			};
 		}
 
 		// Play sound (copied from Minestom, because of complications with cancelling)
