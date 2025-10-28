@@ -4,14 +4,26 @@ import io.github.togar2.pvp.feature.projectile.VanillaFishingRodFeature;
 import net.minestom.server.ServerFlag;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.*;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityType;
+import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.ItemEntity;
+import net.minestom.server.entity.LivingEntity;
+import net.minestom.server.entity.Player;
 import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.other.FishingHookMeta;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.Nullable;
 
+// TODO FIXME sending a bobber and swapping items causes an instance != null assertion to fail
 public class FishingBobber extends CustomEntityProjectile {
+
+	/**
+	 * @see #triggerStatus(byte)
+	 */
+	private static final byte FISHING_HOOK_STATUS = 31;
+
 	private final boolean legacy;
 	private int stuckTime;
 	private Entity hooked;
@@ -28,7 +40,7 @@ public class FishingBobber extends CustomEntityProjectile {
 		// Custom gravity logic: gravity is applied before movement
 		customGravity = legacy ? 0.04 : 0.03;
 		setAerodynamics(getAerodynamics().withGravity(0));
-		
+
 		// Minestom seems to like having wrong values in its registries
 		setAerodynamics(getAerodynamics().withHorizontalAirResistance(0.92).withVerticalAirResistance(0.92));
 	}
@@ -64,18 +76,14 @@ public class FishingBobber extends CustomEntityProjectile {
 				setNoGravity(true);
 				state = State.HOOKED_ENTITY;
 			}
-		} else {
-			if (state == State.HOOKED_ENTITY) {
-				if (hooked != null) {
-					if (hooked.isRemoved() || hooked.getInstance() != getInstance()) {
-						setHookedEntity(null);
-						setNoGravity(false);
-						state = State.IN_AIR;
-					} else {
-						Pos hookedPos = hooked.getPosition();
-						teleport(hookedPos.withY(hookedPos.y() + hooked.getBoundingBox().height() * 0.8));
-					}
-				}
+		} else if (state == State.HOOKED_ENTITY && hooked != null) {
+			if (hooked.isRemoved() || hooked.getInstance() != getInstance()) {
+				setHookedEntity(null);
+				setNoGravity(false);
+				state = State.IN_AIR;
+			} else {
+				Pos hookedPos = hooked.getPosition();
+				teleport(hookedPos.withY(hookedPos.y() + hooked.getBoundingBox().height() * 0.8));
 			}
 		}
 	}
@@ -113,8 +121,8 @@ public class FishingBobber extends CustomEntityProjectile {
 	private boolean shouldStopFishing(Player player) {
 		boolean main = player.getItemInMainHand().material() == Material.FISHING_ROD;
 		boolean off = player.getItemInOffHand().material() == Material.FISHING_ROD;
-		if (player.isRemoved() || player.isDead() || (!main && !off)
-				|| (!legacy && getDistanceSquared(player) > 1024)) {
+		if (player.isRemoved() || player.isDead() ||
+			(!main && !off) || (!legacy && getDistanceSquared(player) > 1024)) {
 			setOwnerEntity(null);
 			remove();
 			return true;
@@ -131,7 +139,7 @@ public class FishingBobber extends CustomEntityProjectile {
 		if (hooked != null) {
 			if (!legacy) {
 				pullEntity(hooked);
-				triggerStatus((byte) 31);
+				triggerStatus(FISHING_HOOK_STATUS);
 			}
 			durability = hooked instanceof ItemEntity ? 3 : 5;
 		}
@@ -176,9 +184,10 @@ public class FishingBobber extends CustomEntityProjectile {
 		y += 0.4;
 		z -= dz / distance * 0.4;
 		
-		if (y > 0.4)
+		if (y > 0.4) {
 			y = 0.4;
-		
+		}
+
 		return new Vec(x, y, z).mul(ServerFlag.SERVER_TICKS_PER_SECOND);
 	}
 	
@@ -186,9 +195,11 @@ public class FishingBobber extends CustomEntityProjectile {
 	public void remove() {
 		Entity shooter = getShooter();
 		if (shooter != null) {
-			if (shooter.getTag(VanillaFishingRodFeature.FISHING_BOBBER) == this) {
-				shooter.removeTag(VanillaFishingRodFeature.FISHING_BOBBER);
-			}
+			//noinspection ReturnOfNull
+			shooter.updateTag(
+				VanillaFishingRodFeature.FISHING_BOBBER,
+				bobber -> bobber == this ? null : bobber
+			);
 		}
 		
 		super.remove();
