@@ -38,7 +38,7 @@ public class VanillaFishingRodFeature implements FishingRodFeature, RegistrableF
 		FeatureType.ITEM_DAMAGE, FeatureType.VERSION
 	);
 
-	public static final Tag<FishingBobber> FISHING_BOBBER = Tag.Transient("fishingBobber");
+	public static final Tag<FishingBobber> FISHING_BOBBER = Tag.Transient("minestompvp:fishing_bobber");
 
 	private final FeatureConfiguration configuration;
 

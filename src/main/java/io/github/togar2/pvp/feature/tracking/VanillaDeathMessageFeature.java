@@ -29,7 +29,7 @@ public class VanillaDeathMessageFeature implements TrackingFeature, RegistrableF
 			FeatureType.FALL, FeatureType.PLAYER_STATE
 	);
 	
-	public static final Tag<CombatManager> COMBAT_MANAGER = Tag.Transient("combatManager");
+	public static final Tag<CombatManager> COMBAT_MANAGER = Tag.Transient("minestompvp:combat_manager");
 	
 	private final FeatureConfiguration configuration;
 	

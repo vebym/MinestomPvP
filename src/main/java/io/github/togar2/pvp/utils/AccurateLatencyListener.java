@@ -11,7 +11,7 @@ import net.minestom.server.tag.Tag;
 public class AccurateLatencyListener {
 	private static final Component KICK_MESSAGE = Component.text("Bad Keep Alive packet", NamedTextColor.RED);
 	
-	private static final Tag<Long> SEND_TIME = Tag.Transient("keepalive_send_time");
+	private static final Tag<Long> SEND_TIME = Tag.Transient("minestompvp:last_keepalive_timestamp");
 	
 	public static void listener(ClientKeepAlivePacket packet, Player player) {
 		final long packetId = packet.id();

@@ -26,7 +26,7 @@ public class VanillaItemCooldownFeature implements ItemCooldownFeature, Registra
 			VanillaItemCooldownFeature::initPlayer
 	);
 	
-	public static final Tag<Map<Material, Long>> COOLDOWN_END = Tag.Transient("cooldownEnd");
+	public static final Tag<Map<Material, Long>> COOLDOWN_END = Tag.Transient("minestompvp:item_cooldown_end");
 	
 	private static void initPlayer(Player player, boolean firstInit) {
 		player.setTag(COOLDOWN_END, new HashMap<>());

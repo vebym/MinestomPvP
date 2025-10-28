@@ -38,8 +38,8 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 			FeatureType.PLAYER_STATE
 	);
 	
-	public static final Tag<Double> FALL_DISTANCE = Tag.Transient("fallDistance");
-	public static final Tag<Boolean> EXTRA_FALL_PARTICLES = Tag.Transient("extraFallParticles");
+	public static final Tag<Double> FALL_DISTANCE = Tag.Transient("minestompvp:fall_distance");
+	public static final Tag<Boolean> EXTRA_FALL_PARTICLES = Tag.Transient("minestompvp:fall_extra_particles");
 	
 	private final FeatureConfiguration configuration;
 	
@@ -105,9 +105,9 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 		Point landingPos = getLandingPos(entity, newPos);
 		Block block = entity.getInstance().getBlock(landingPos);
 		
-		if (entity.hasTag(EXTRA_FALL_PARTICLES) && entity.getTag(EXTRA_FALL_PARTICLES) && fallDistance > 0.0) {
+		if (Boolean.TRUE.equals(entity.getTag(EXTRA_FALL_PARTICLES)) && fallDistance > 0.0) {
 			Vec position = Vec.fromPoint(landingPos).apply(Vec.Operator.FLOOR).add(0.5, 1, 0.5);
-			int particleCount = (int) Math.max(0, Math.min(200, 50 * fallDistance));
+			int particleCount = (int) Math.clamp(fallDistance * 50, 0, 200);
 			
 			entity.sendPacketToViewersAndSelf(new ParticlePacket(
 					Particle.BLOCK.withBlock(block),
@@ -120,20 +120,18 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 		}
 		
 		double safeFallDistance = entity.getAttributeValue(Attribute.SAFE_FALL_DISTANCE);
-		if (fallDistance > safeFallDistance) {
-			if (!block.isAir()) {
-				double damageDistance = Math.ceil(fallDistance - safeFallDistance);
-				double particleMultiplier = Math.min(0.2 + damageDistance / 15.0, 2.5);
-				int particleCount = (int) (150 * particleMultiplier);
-				
-				entity.sendPacketToViewersAndSelf(new ParticlePacket(
-						Particle.BLOCK.withBlock(block), false,
-						false,
-						newPos.x(), newPos.y(), newPos.z(),
-						0, 0, 0,
-						0.15f, particleCount
-				));
-			}
+		if (fallDistance > safeFallDistance && !block.isAir()) {
+			double damageDistance = Math.ceil(fallDistance - safeFallDistance);
+			double particleMultiplier = Math.min(0.2 + damageDistance / 15.0, 2.5);
+			int particleCount = (int) (150 * particleMultiplier);
+
+			entity.sendPacketToViewersAndSelf(new ParticlePacket(
+				Particle.BLOCK.withBlock(block), false,
+				false,
+				newPos.x(), newPos.y(), newPos.z(),
+				0, 0, 0,
+				0.15f, particleCount
+			));
 		}
 		
 		entity.setTag(FALL_DISTANCE, 0.0);

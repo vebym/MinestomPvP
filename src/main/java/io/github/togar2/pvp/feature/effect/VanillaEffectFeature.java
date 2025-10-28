@@ -38,7 +38,11 @@ import net.minestom.server.tag.Tag;
 import net.minestom.server.utils.time.TimeUnit;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -50,7 +54,7 @@ public class VanillaEffectFeature implements EffectFeature, RegistrableFeature {
 			FeatureType.EXHAUSTION, FeatureType.FOOD, FeatureType.VERSION
 	);
 	
-	public static final Tag<Map<PotionEffect, Integer>> DURATION_LEFT = Tag.Transient("effectDurationLeft");
+	public static final Tag<Map<PotionEffect, Integer>> DURATION_LEFT = Tag.Transient("minestompvp:effect_duration_remaining");
 	public static final int DEFAULT_POTION_COLOR = 0xff385dc6;
 	
 	private final FeatureConfiguration configuration;
@@ -163,7 +167,7 @@ public class VanillaEffectFeature implements EffectFeature, RegistrableFeature {
 		CombatPotionType combatPotionType = CombatPotionTypes.get(potionType);
 		if (combatPotionType != null) potions.addAll(combatPotionType.getEffects(version));
 		
-		potions.addAll(customEffects.stream().map((customPotion) ->
+		potions.addAll(customEffects.stream().map(customPotion ->
 				new Potion(Objects.requireNonNull(customPotion.id()),
 						(byte)customPotion.amplifier(), customPotion.duration(),
 						PotionFlags.create(
@@ -271,7 +275,7 @@ public class VanillaEffectFeature implements EffectFeature, RegistrableFeature {
 			} else {
 				int duration = potion.duration();
 				if (version.legacy()) duration = (int) Math.floor(duration * 0.75);
-				duration = (int) (proximity * (double) duration + 0.5);
+				duration = (int) (proximity * duration + 0.5);
 				
 				if (duration > 20) {
 					entity.addEffect(new Potion(potion.effect(), potion.amplifier(), duration, potion.flags()));

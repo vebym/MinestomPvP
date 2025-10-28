@@ -26,7 +26,7 @@ public class VanillaPlayerStateFeature implements PlayerStateFeature, Registrabl
 			FeatureType.PLAYER_STATE, configuration -> new VanillaPlayerStateFeature()
 	);
 	
-	public static final Tag<Block> LAST_CLIMBED_BLOCK = Tag.Transient("lastClimbedBlock");
+	public static final Tag<Block> LAST_CLIMBED_BLOCK = Tag.Transient("minestompvp:last_climb");
 	
 	@Override
 	public void init(EventNode<EntityInstanceEvent> node) {
