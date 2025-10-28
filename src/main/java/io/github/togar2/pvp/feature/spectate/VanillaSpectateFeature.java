@@ -23,7 +23,7 @@ public class VanillaSpectateFeature implements SpectateFeature, RegistrableFeatu
 			FeatureType.SPECTATE, configuration -> new VanillaSpectateFeature()
 	);
 	
-	public static final Tag<Entity> SPECTATING = Tag.Transient("spectating");
+	public static final Tag<Entity> SPECTATING = Tag.Transient("minestompvp:spectating");
 	
 	@Override
 	public int getPriority() {
