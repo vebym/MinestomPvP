@@ -34,13 +34,16 @@ import net.minestom.server.tag.Tag;
 public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 	public static final DefinedFeature<VanillaFallFeature> DEFINED = new DefinedFeature<>(
 			FeatureType.FALL, VanillaFallFeature::new,
-			VanillaFallFeature::initPlayer,
 			FeatureType.PLAYER_STATE
 	);
-	
-	public static final Tag<Double> FALL_DISTANCE = Tag.Transient("minestompvp:fall_distance");
-	public static final Tag<Boolean> EXTRA_FALL_PARTICLES = Tag.Transient("minestompvp:fall_extra_particles");
-	
+
+	public static final Tag<Boolean> EXTRA_FALL_PARTICLES =
+		Tag.Transient("minestompvp:fall_extra_particles");
+
+	public static final Tag<Double> FALL_DISTANCE =
+		Tag.<Double>Transient("minestompvp:fall_distance")
+			.defaultValue(0.0D);
+
 	private final FeatureConfiguration configuration;
 	
 	private PlayerStateFeature playerStateFeature;
@@ -53,11 +56,7 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 	public void initDependencies() {
 		this.playerStateFeature = configuration.get(FeatureType.PLAYER_STATE);
 	}
-	
-	public static void initPlayer(Player player, boolean firstInit) {
-		player.setTag(FALL_DISTANCE, 0.0);
-	}
-	
+
 	@Override
 	public void init(EventNode<EntityInstanceEvent> node) {
 		// For living non-player entities, handle fall damage every tick
@@ -72,7 +71,7 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 		// For players, handle fall damage on move event
 		node.addListener(PlayerMoveEvent.class, event -> {
 			Player player = event.getPlayer();
-			if (playerStateFeature.isClimbing(player)) player.setTag(FALL_DISTANCE, 0.0);
+			if (playerStateFeature.isClimbing(player)) resetFallDistance(player);
 			
 			handleFallDamage(
 					player, player.getPosition(),
@@ -88,7 +87,7 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 		if ((entity instanceof Player player && player.isFlying())
 				|| entity.hasEffect(PotionEffect.LEVITATION)
 				|| entity.hasEffect(PotionEffect.SLOW_FALLING) || dy > 0) {
-			entity.setTag(FALL_DISTANCE, 0.0);
+			resetFallDistance(entity);
 			return;
 		}
 		
@@ -133,9 +132,9 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 				0.15f, particleCount
 			));
 		}
-		
-		entity.setTag(FALL_DISTANCE, 0.0);
-		
+
+		resetFallDistance(entity);
+
 		if (entity instanceof Player player && player.getGameMode().invulnerable()) return;
 		int damage = getFallDamage(entity, fallDistance);
 		if (damage > 0) {
@@ -151,7 +150,7 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 				bigFall ?
 						SoundEvent.ENTITY_PLAYER_BIG_FALL :
 						SoundEvent.ENTITY_PLAYER_SMALL_FALL,
-				entity instanceof  Player ? Sound.Source.PLAYER : Sound.Source.HOSTILE,
+				entity instanceof Player ? Sound.Source.PLAYER : Sound.Source.HOSTILE,
 				1.0f, 1.0f
 		), entity);
 	}
@@ -164,7 +163,7 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 	
 	@Override
 	public double getFallDistance(LivingEntity entity) {
-		return entity.hasTag(FALL_DISTANCE) ? entity.getTag(FALL_DISTANCE) : 0.0;
+		return entity.getTag(FALL_DISTANCE);
 	}
 	
 	@Override
@@ -174,8 +173,11 @@ public class VanillaFallFeature implements FallFeature, RegistrableFeature {
 	
 	@Override
 	public void setExtraFallParticles(LivingEntity entity, boolean extraFallParticles) {
-		if (extraFallParticles) entity.setTag(EXTRA_FALL_PARTICLES, true);
-		else entity.removeTag(EXTRA_FALL_PARTICLES);
+		if (extraFallParticles) {
+			entity.setTag(EXTRA_FALL_PARTICLES, true);
+		} else {
+			entity.removeTag(EXTRA_FALL_PARTICLES);
+		}
 	}
 	
 	protected Point getLandingPos(LivingEntity livingEntity, Pos position) {

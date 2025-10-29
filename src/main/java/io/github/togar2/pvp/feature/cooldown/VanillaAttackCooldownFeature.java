@@ -24,7 +24,7 @@ public class VanillaAttackCooldownFeature implements AttackCooldownFeature, Regi
 			FeatureType.VERSION
 	);
 	
-	public static final Tag<Long> LAST_ATTACKED_TICKS = Tag.Long("lastAttackedTicks");
+	public static final Tag<Long> LAST_ATTACKED_TICKS = Tag.Transient("minestompvp:ticks_last_attacked");
 	
 	private final FeatureConfiguration configuration;
 	private CombatVersion version;

@@ -29,9 +29,9 @@ public class LegacyVanillaBlockFeature extends VanillaBlockFeature
 			FeatureType.ITEM_DAMAGE
 	);
 	
-	public static final Tag<Long> LAST_SWING_TIME = Tag.Long("lastSwingTime");
-	public static final Tag<Boolean> BLOCKING_SWORD = Tag.Boolean("blockingSword");
-	public static final Tag<ItemStack> BLOCK_REPLACEMENT_ITEM = Tag.ItemStack("blockReplacementItem");
+	public static final Tag<Long> LAST_SWING_TIME = Tag.Transient("minestompvp:last_swing_timestamp");
+	public static final Tag<Boolean> BLOCKING_SWORD = Tag.Transient("minestompvp:sword_block");
+	public static final Tag<ItemStack> BLOCK_REPLACEMENT_ITEM = Tag.Transient("minestompvp:sword_block_item");
 	
 	private final ItemStack blockingItem;
 	
