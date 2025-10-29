@@ -30,9 +30,13 @@ public class VanillaExhaustionFeature implements ExhaustionFeature, RegistrableF
 			VanillaExhaustionFeature::initPlayer,
 			FeatureType.DIFFICULTY, FeatureType.VERSION
 	);
-	
-	public static final Tag<Float> EXHAUSTION = Tag.Float("exhaustion");
-	
+
+	private static final float DEFAULT_EXHAUSTION = 40.0F;
+	public static final Tag<Float> EXHAUSTION =
+		Tag.<Float>Transient("minestompvp:food_exhaustion")
+			.defaultValue(DEFAULT_EXHAUSTION);
+
+
 	private final FeatureConfiguration configuration;
 	
 	private DifficultyProvider difficultyFeature;
@@ -94,11 +98,11 @@ public class VanillaExhaustionFeature implements ExhaustionFeature, RegistrableF
 		
 		if (player.isOnGround()) {
 			int l = (int) Math.round(Math.sqrt(xDiff * xDiff + zDiff * zDiff) * 100.0f);
-			if (l > 0) addExhaustion(player, (player.isSprinting() ? 0.1f : 0.0f) * (float) l * 0.01f);
+			if (l > 0) addExhaustion(player, (player.isSprinting() ? 0.1f : 0.0f) * l * 0.01f);
 		} else {
 			if (Objects.requireNonNull(player.getInstance()).getBlock(player.getPosition()) == Block.WATER) {
 				int l = (int) Math.round(Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff) * 100.0f);
-				if (l > 0) addExhaustion(player, 0.01f * (float) l * 0.01f);
+				if (l > 0) addExhaustion(player, 0.01f * l * 0.01f);
 			}
 		}
 	}
@@ -106,9 +110,11 @@ public class VanillaExhaustionFeature implements ExhaustionFeature, RegistrableF
 	@Override
 	public void addExhaustion(Player player, float exhaustion) {
 		if (player.getGameMode().invulnerable()) return;
-		PlayerExhaustEvent playerExhaustEvent = new PlayerExhaustEvent(player, exhaustion);
-		EventDispatcher.callCancellable(playerExhaustEvent, () -> player.setTag(EXHAUSTION,
-				Math.min(player.getTag(EXHAUSTION) + playerExhaustEvent.getAmount(), 40)));
+
+		PlayerExhaustEvent event = new PlayerExhaustEvent(player, exhaustion);
+		EventDispatcher.callCancellable(event,
+			() -> player.updateTag(EXHAUSTION, v -> Math.min(DEFAULT_EXHAUSTION, v + event.getAmount()))
+		);
 	}
 	
 	@Override

@@ -15,7 +15,11 @@ import net.minestom.server.ServerFlag;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.*;
+import net.minestom.server.entity.EquipmentSlot;
+import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.LivingEntity;
+import net.minestom.server.entity.Player;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.entity.EntityAttackEvent;
@@ -46,7 +50,7 @@ public class VanillaTridentFeature implements TridentFeature, RegistrableFeature
 	private ItemDamageFeature itemDamageFeature;
 	private EnchantmentFeature enchantmentFeature;
 	
-	public static final Tag<Long> RIPTIDE_START = Tag.Long("riptideStart");
+	public static final Tag<Long> RIPTIDE_START = Tag.Transient("minestompvp:riptide_start");
 	
 	public VanillaTridentFeature(FeatureConfiguration configuration) {
 		this.configuration = configuration;
@@ -140,8 +144,12 @@ public class VanillaTridentFeature implements TridentFeature, RegistrableFeature
 				l * (n / length)
 		).mul(ServerFlag.SERVER_TICKS_PER_SECOND)));
 		
-		SoundEvent soundEvent = level >= 3 ? SoundEvent.ITEM_TRIDENT_RIPTIDE_3 :
-				(level == 2 ? SoundEvent.ITEM_TRIDENT_RIPTIDE_2 : SoundEvent.ITEM_TRIDENT_RIPTIDE_1);
+		SoundEvent soundEvent = switch (level) {
+			case 3 -> SoundEvent.ITEM_TRIDENT_RIPTIDE_3;
+			case 2 -> SoundEvent.ITEM_TRIDENT_RIPTIDE_2;
+			default -> SoundEvent.ITEM_TRIDENT_RIPTIDE_1;
+		};
+
 		ViewUtil.viewersAndSelf(player).playSound(Sound.sound(
 				soundEvent, Sound.Source.PLAYER,
 				1.0f, 1.0f

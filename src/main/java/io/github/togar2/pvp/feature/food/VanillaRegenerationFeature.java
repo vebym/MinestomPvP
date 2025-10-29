@@ -23,11 +23,12 @@ import net.minestom.server.world.Difficulty;
 public class VanillaRegenerationFeature implements RegenerationFeature, RegistrableFeature {
 	public static final DefinedFeature<VanillaRegenerationFeature> DEFINED = new DefinedFeature<>(
 			FeatureType.REGENERATION, VanillaRegenerationFeature::new,
-			VanillaRegenerationFeature::initPlayer,
 			FeatureType.EXHAUSTION, FeatureType.DIFFICULTY, FeatureType.VERSION
 	);
 	
-	public static final Tag<Integer> STARVATION_TICKS = Tag.Integer("starvationTicks");
+	public static final Tag<Integer> STARVATION_TICKS =
+		Tag.<Integer>Transient("minestompvp:starve_ticks")
+			.defaultValue(0);
 	
 	private final FeatureConfiguration configuration;
 	
@@ -45,11 +46,7 @@ public class VanillaRegenerationFeature implements RegenerationFeature, Registra
 		this.difficultyFeature = configuration.get(FeatureType.DIFFICULTY);
 		this.version = configuration.get(FeatureType.VERSION);
 	}
-	
-	public static void initPlayer(Player player, boolean firstInit) {
-		player.setTag(STARVATION_TICKS, 0);
-	}
-	
+
 	@Override
 	public void init(EventNode<EntityInstanceEvent> node) {
 		node.addListener(PlayerTickEvent.class, event -> onTick(event.getPlayer()));
