@@ -5,7 +5,6 @@ import io.github.togar2.pvp.feature.FeatureType;
 import io.github.togar2.pvp.feature.config.DefinedFeature;
 import io.github.togar2.pvp.feature.config.FeatureConfiguration;
 import io.github.togar2.pvp.feature.enchantment.EnchantmentFeature;
-import io.github.togar2.pvp.utils.CombatVersion;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.attribute.Attribute;
@@ -18,23 +17,31 @@ import net.minestom.server.utils.MathUtils;
  * Vanilla implementation of {@link ArmorFeature}
  */
 public class VanillaArmorFeature implements ArmorFeature {
-	public static final DefinedFeature<VanillaArmorFeature> DEFINED = new DefinedFeature<>(
-			FeatureType.ARMOR, VanillaArmorFeature::new,
-			FeatureType.ENCHANTMENT, FeatureType.VERSION
+	public static final DefinedFeature<VanillaArmorFeature> MODERN = new DefinedFeature<>(
+		FeatureType.ARMOR,
+		config -> new VanillaArmorFeature(config, false),
+		FeatureType.ENCHANTMENT
 	);
-	
+
+	public static final DefinedFeature<VanillaArmorFeature> LEGACY = new DefinedFeature<>(
+		FeatureType.ARMOR,
+		config -> new VanillaArmorFeature(config, true),
+		FeatureType.ENCHANTMENT
+	);
+
+	private final boolean legacy;
 	private final FeatureConfiguration configuration;
+
 	private EnchantmentFeature enchantmentFeature;
-	private CombatVersion version;
-	
-	public VanillaArmorFeature(FeatureConfiguration configuration) {
+
+	public VanillaArmorFeature(FeatureConfiguration configuration, boolean legacy) {
 		this.configuration = configuration;
+		this.legacy = legacy;
 	}
 	
 	@Override
 	public void initDependencies() {
 		this.enchantmentFeature = configuration.get(FeatureType.ENCHANTMENT);
-		this.version = configuration.get(FeatureType.VERSION);
 	}
 	
 	@Override
@@ -48,13 +55,13 @@ public class VanillaArmorFeature implements ArmorFeature {
 		if (typeInfo.bypassesArmor()) return amount;
 		
 		double armorValue = entity.getAttributeValue(Attribute.ARMOR);
-		if (version.legacy()) {
+		if (legacy) {
 			int armorMultiplier = 25 - (int) armorValue;
-			return (amount * (float) armorMultiplier) / 25;
+			return (amount * armorMultiplier) / 25;
 		} else {
 			return getDamageLeft(
-					amount, (float) Math.floor(armorValue),
-					(float) entity.getAttributeValue(Attribute.ARMOR_TOUGHNESS)
+				amount, (float) Math.floor(armorValue),
+				(float) entity.getAttributeValue(Attribute.ARMOR_TOUGHNESS)
 			);
 		}
 	}
@@ -68,7 +75,7 @@ public class VanillaArmorFeature implements ArmorFeature {
 		if (effect != null) {
 			k = (effect.potion().amplifier() + 1) * 5;
 			int j = 25 - k;
-			float f = amount * (float) j;
+			float f = amount * j;
 			amount = Math.max(f / 25, 0);
 		}
 		
@@ -76,19 +83,19 @@ public class VanillaArmorFeature implements ArmorFeature {
 			return 0;
 		} else {
 			k = enchantmentFeature.getProtectionAmount(entity, damageType);
-			if (version.modern()) {
-				if (k > 0) {
-					amount = getDamageAfterProtectionEnchantment(amount, (float) k);
-				}
-			} else {
+			if (legacy) {
 				if (k > 20) {
 					k = 20;
 				}
-				
+
 				if (k > 0) {
 					int j = 25 - k;
-					float f = amount * (float) j;
+					float f = amount * j;
 					amount = f / 25;
+				}
+			} else {
+				if (k > 0) {
+					amount = getDamageAfterProtectionEnchantment(amount, k);
 				}
 			}
 			

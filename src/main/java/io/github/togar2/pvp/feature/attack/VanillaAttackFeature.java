@@ -14,13 +14,16 @@ import io.github.togar2.pvp.feature.food.ExhaustionFeature;
 import io.github.togar2.pvp.feature.item.ItemDamageFeature;
 import io.github.togar2.pvp.feature.knockback.KnockbackFeature;
 import io.github.togar2.pvp.player.CombatPlayer;
-import io.github.togar2.pvp.utils.CombatVersion;
 import io.github.togar2.pvp.utils.ViewUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.sound.Sound;
 import net.minestom.server.ServerFlag;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.*;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EquipmentSlot;
+import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.LivingEntity;
+import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.entity.damage.DamageType;
@@ -43,15 +46,26 @@ import java.util.List;
  * Listens on {@link EntityAttackEvent}
  */
 public class VanillaAttackFeature implements AttackFeature, RegistrableFeature {
-	public static final DefinedFeature<VanillaAttackFeature> DEFINED = new DefinedFeature<>(
-		FeatureType.ATTACK, VanillaAttackFeature::new,
+	public static final DefinedFeature<VanillaAttackFeature> MODERN = new DefinedFeature<>(
+		FeatureType.ATTACK,
+		config -> new VanillaAttackFeature(config, false),
 		FeatureType.ATTACK_COOLDOWN, FeatureType.EXHAUSTION, FeatureType.ITEM_DAMAGE,
-		FeatureType.ENCHANTMENT, FeatureType.CRITICAL, FeatureType.SWEEPING, FeatureType.KNOCKBACK, FeatureType.VERSION
+		FeatureType.ENCHANTMENT, FeatureType.CRITICAL,
+		FeatureType.SWEEPING, FeatureType.KNOCKBACK
+	);
+
+	public static final DefinedFeature<VanillaAttackFeature> LEGACY = new DefinedFeature<>(
+		FeatureType.ATTACK,
+		config -> new VanillaAttackFeature(config, true),
+		FeatureType.ATTACK_COOLDOWN, FeatureType.EXHAUSTION, FeatureType.ITEM_DAMAGE,
+		FeatureType.ENCHANTMENT, FeatureType.CRITICAL,
+		FeatureType.SWEEPING, FeatureType.KNOCKBACK
 	);
 
 	private static final double ATTACK_RANGE_MARGIN = 3.0;
 
 	private final FeatureConfiguration configuration;
+	private final boolean legacy;
 
 	private AttackCooldownFeature cooldownFeature;
 	private ExhaustionFeature exhaustionFeature;
@@ -62,10 +76,9 @@ public class VanillaAttackFeature implements AttackFeature, RegistrableFeature {
 	private SweepingFeature sweepingFeature;
 	private KnockbackFeature knockbackFeature;
 
-	private CombatVersion version;
-
-	public VanillaAttackFeature(FeatureConfiguration configuration) {
+	public VanillaAttackFeature(FeatureConfiguration configuration, boolean legacy) {
 		this.configuration = configuration;
+		this.legacy = legacy;
 	}
 
 	@Override
@@ -77,7 +90,6 @@ public class VanillaAttackFeature implements AttackFeature, RegistrableFeature {
 		this.criticalFeature = configuration.get(FeatureType.CRITICAL);
 		this.sweepingFeature = configuration.get(FeatureType.SWEEPING);
 		this.knockbackFeature = configuration.get(FeatureType.KNOCKBACK);
-		this.version = configuration.get(FeatureType.VERSION);
 	}
 
 	@Override
@@ -245,13 +257,14 @@ public class VanillaAttackFeature implements AttackFeature, RegistrableFeature {
 		boolean critical = preSounds.critical();
 		boolean sweeping = preSounds.sweeping();
 
-		boolean sounds = version.modern();
-
 		// Call event which can modify attack values
 		FinalAttackEvent finalAttackEvent = new FinalAttackEvent(
 			attacker, target, sprintAttack, critical, sweeping, damage,
-			magicalDamage, sounds, sounds
+			magicalDamage,
+			// legacy doesn't play attack sounds
+			legacy, legacy
 		);
+
 		EventDispatcher.call(finalAttackEvent);
 		if (finalAttackEvent.isCancelled()) return null;
 

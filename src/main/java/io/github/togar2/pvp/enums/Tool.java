@@ -1,6 +1,5 @@
 package io.github.togar2.pvp.enums;
 
-import io.github.togar2.pvp.utils.CombatVersion;
 import io.github.togar2.pvp.utils.ModifierId;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.entity.EquipmentSlot;
@@ -81,8 +80,13 @@ public enum Tool {
 		this.isSword = isSword;
 	}
 	
-	public static void updateEquipmentAttributes(LivingEntity entity, ItemStack oldStack, ItemStack newStack,
-	                                             EquipmentSlot slot, CombatVersion version) {
+	public static void updateEquipmentAttributes(
+		LivingEntity entity,
+		ItemStack oldStack,
+		ItemStack newStack,
+		EquipmentSlot slot,
+		boolean legacy
+	) {
 		if (slot != EquipmentSlot.MAIN_HAND) return;
 		
 		Tool oldTool = fromMaterial(oldStack.material());
@@ -96,8 +100,10 @@ public enum Tool {
 		
 		// Add attributes from new tool
 		if (newTool != null && hasDefaultAttributes(newStack)) {
-			(version.legacy() ? newTool.legacyAttributeModifiers : newTool.attributeModifiers).forEach((attribute, modifier) ->
-					entity.getAttribute(attribute).addModifier(modifier));
+			(legacy ? newTool.legacyAttributeModifiers : newTool.attributeModifiers)
+				.forEach((attribute, modifier) ->
+					entity.getAttribute(attribute).addModifier(modifier)
+				);
 		}
 	}
 	

@@ -3,8 +3,6 @@ package io.github.togar2.pvp.feature.cooldown;
 import io.github.togar2.pvp.feature.FeatureType;
 import io.github.togar2.pvp.feature.RegistrableFeature;
 import io.github.togar2.pvp.feature.config.DefinedFeature;
-import io.github.togar2.pvp.feature.config.FeatureConfiguration;
-import io.github.togar2.pvp.utils.CombatVersion;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.event.EventListener;
@@ -19,25 +17,28 @@ import net.minestom.server.utils.MathUtils;
  * Vanilla implementation of {@link AttackCooldownFeature}
  */
 public class VanillaAttackCooldownFeature implements AttackCooldownFeature, RegistrableFeature {
-	public static final DefinedFeature<VanillaAttackCooldownFeature> DEFINED = new DefinedFeature<>(
-			FeatureType.ATTACK_COOLDOWN, VanillaAttackCooldownFeature::new,
-			FeatureType.VERSION
+
+	private static final VanillaAttackCooldownFeature INSTANCE_MODERN = new VanillaAttackCooldownFeature(false);
+	private static final VanillaAttackCooldownFeature INSTANCE_LEGACY = new VanillaAttackCooldownFeature(true);
+
+	public static final DefinedFeature<VanillaAttackCooldownFeature> MODERN = new DefinedFeature<>(
+		FeatureType.ATTACK_COOLDOWN,
+		config -> INSTANCE_MODERN
 	);
-	
+
+	public static final DefinedFeature<VanillaAttackCooldownFeature> LEGACY = new DefinedFeature<>(
+		FeatureType.ATTACK_COOLDOWN,
+		config -> INSTANCE_LEGACY
+	);
+
 	public static final Tag<Long> LAST_ATTACKED_TICKS = Tag.Transient("minestompvp:ticks_last_attacked");
 	
-	private final FeatureConfiguration configuration;
-	private CombatVersion version;
-	
-	public VanillaAttackCooldownFeature(FeatureConfiguration configuration) {
-		this.configuration = configuration;
+	private final boolean legacy;
+
+	public VanillaAttackCooldownFeature(boolean legacy) {
+		this.legacy = legacy;
 	}
-	
-	@Override
-	public void initDependencies() {
-		this.version = configuration.get(FeatureType.VERSION);
-	}
-	
+
 	@Override
 	public void init(EventNode<EntityInstanceEvent> node) {
 		node.addListener(EventListener.builder(PlayerHandAnimationEvent.class).handler(event ->
@@ -58,7 +59,7 @@ public class VanillaAttackCooldownFeature implements AttackCooldownFeature, Regi
 	
 	@Override
 	public double getAttackCooldownProgress(Player player) {
-		if (version.legacy()) return 1.0;
+		if (legacy) return 1.0;
 		
 		Long lastAttacked = player.getTag(LAST_ATTACKED_TICKS);
 		if (lastAttacked == null) return 1.0;

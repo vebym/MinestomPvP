@@ -12,7 +12,6 @@ import io.github.togar2.pvp.potion.effect.CombatPotionEffect;
 import io.github.togar2.pvp.potion.effect.CombatPotionEffects;
 import io.github.togar2.pvp.potion.item.CombatPotionType;
 import io.github.togar2.pvp.potion.item.CombatPotionTypes;
-import io.github.togar2.pvp.utils.CombatVersion;
 import io.github.togar2.pvp.utils.PotionFlags;
 import net.kyori.adventure.util.RGBLike;
 import net.minestom.server.MinecraftServer;
@@ -49,29 +48,36 @@ import java.util.concurrent.ConcurrentHashMap;
  * Vanilla implementation of {@link EffectFeature}
  */
 public class VanillaEffectFeature implements EffectFeature, RegistrableFeature {
-	public static final DefinedFeature<VanillaEffectFeature> DEFINED = new DefinedFeature<>(
-			FeatureType.EFFECT, VanillaEffectFeature::new,
-			FeatureType.EXHAUSTION, FeatureType.FOOD, FeatureType.VERSION
+	public static final DefinedFeature<VanillaEffectFeature> MODERN = new DefinedFeature<>(
+		FeatureType.EFFECT,
+		config -> new VanillaEffectFeature(config, false),
+		FeatureType.EXHAUSTION, FeatureType.FOOD
 	);
-	
+
+	public static final DefinedFeature<VanillaEffectFeature> LEGACY = new DefinedFeature<>(
+		FeatureType.EFFECT,
+		config -> new VanillaEffectFeature(config, true),
+		FeatureType.EXHAUSTION, FeatureType.FOOD
+	);
+
 	public static final Tag<Map<PotionEffect, Integer>> DURATION_LEFT = Tag.Transient("minestompvp:effect_duration_remaining");
 	public static final int DEFAULT_POTION_COLOR = 0xff385dc6;
 	
 	private final FeatureConfiguration configuration;
+	private final boolean legacy;
 	
 	private ExhaustionFeature exhaustionFeature;
 	private FoodFeature foodFeature;
-	private CombatVersion version;
-	
-	public VanillaEffectFeature(FeatureConfiguration configuration) {
+
+	public VanillaEffectFeature(FeatureConfiguration configuration, boolean legacy) {
 		this.configuration = configuration;
+		this.legacy = legacy;
 	}
 	
 	@Override
 	public void initDependencies() {
 		this.exhaustionFeature = configuration.get(FeatureType.EXHAUSTION);
 		this.foodFeature = configuration.get(FeatureType.FOOD);
-		this.version = configuration.get(FeatureType.VERSION);
 	}
 	
 	@Override
@@ -116,7 +122,7 @@ public class VanillaEffectFeature implements EffectFeature, RegistrableFeature {
 			potionMap.put(event.getPotion().effect(), infinite ? Integer.MAX_VALUE : event.getPotion().duration());
 			
 			CombatPotionEffect combatPotionEffect = CombatPotionEffects.get(event.getPotion().effect());
-			combatPotionEffect.onApplied(entity, event.getPotion().amplifier(), version);
+			combatPotionEffect.onApplied(entity, event.getPotion().amplifier(), legacy);
 			
 			updatePotionVisibility(entity);
 		});

@@ -1,7 +1,5 @@
 package io.github.togar2.pvp.feature.block;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import io.github.togar2.pvp.damage.DamageTypeInfo;
 import io.github.togar2.pvp.enums.Tool;
 import io.github.togar2.pvp.events.DamageBlockEvent;
@@ -10,7 +8,6 @@ import io.github.togar2.pvp.feature.config.DefinedFeature;
 import io.github.togar2.pvp.feature.config.FeatureConfiguration;
 import io.github.togar2.pvp.feature.cooldown.ItemCooldownFeature;
 import io.github.togar2.pvp.feature.item.ItemDamageFeature;
-import io.github.togar2.pvp.utils.CombatVersion;
 import net.kyori.adventure.sound.Sound;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -26,30 +23,40 @@ import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * Vanilla implementation of {@link BlockFeature}
+ * TODO consumable nbt, blocking damage and sound
  */
 public class VanillaBlockFeature implements BlockFeature {
-	public static final DefinedFeature<VanillaBlockFeature> DEFINED = new DefinedFeature<>(
-			FeatureType.BLOCK, VanillaBlockFeature::new,
-			FeatureType.ITEM_DAMAGE, FeatureType.ITEM_COOLDOWN, FeatureType.VERSION
+	public static final DefinedFeature<VanillaBlockFeature> MODERN = new DefinedFeature<>(
+		FeatureType.BLOCK,
+		config -> new VanillaBlockFeature(config, false),
+		FeatureType.ITEM_DAMAGE, FeatureType.ITEM_COOLDOWN
 	);
-	
+
+	public static final DefinedFeature<VanillaBlockFeature> LEGACY = new DefinedFeature<>(
+		FeatureType.BLOCK,
+		config -> new VanillaBlockFeature(config, true),
+		FeatureType.ITEM_DAMAGE, FeatureType.ITEM_COOLDOWN
+	);
+
 	private final FeatureConfiguration configuration;
+	private final boolean legacy;
 	
 	private ItemDamageFeature itemDamageFeature;
 	private ItemCooldownFeature itemCooldownFeature;
-	private CombatVersion version;
-	
-	public VanillaBlockFeature(FeatureConfiguration configuration) {
+
+	public VanillaBlockFeature(FeatureConfiguration configuration, boolean legacy) {
 		this.configuration = configuration;
+		this.legacy = legacy;
 	}
 	
 	@Override
 	public void initDependencies() {
 		this.itemDamageFeature = configuration.get(FeatureType.ITEM_DAMAGE);
 		this.itemCooldownFeature = configuration.get(FeatureType.ITEM_COOLDOWN);
-		this.version = configuration.get(FeatureType.VERSION);
 	}
 	
 	protected boolean isPiercing(Damage damage) {
@@ -70,7 +77,7 @@ public class VanillaBlockFeature implements BlockFeature {
 		if (!info.bypassesArmor() && !isPiercing(damage)
 				&& entity.getEntityMeta() instanceof LivingEntityMeta meta
 				&& meta.isHandActive() && entity.getItemInHand(meta.getActiveHand()).material() == Material.SHIELD) {
-			if (version.legacy()) return true;
+			if (legacy) return true;
 			
 			if (damage.getSource() != null) {
 				Pos attackerPos = damage.getSource().getPosition();
@@ -92,7 +99,7 @@ public class VanillaBlockFeature implements BlockFeature {
 	@Override
 	public boolean applyBlock(LivingEntity entity, Damage damage) {
 		float amount = damage.getAmount();
-		float resultingDamage = version.legacy() ? Math.max(0, (amount + 1) * 0.5f) : 0;
+		float resultingDamage = legacy ? Math.max(0, (amount + 1) * 0.5f) : 0;
 		
 		DamageBlockEvent damageBlockEvent = new DamageBlockEvent(entity, amount, resultingDamage, false);
 		EventDispatcher.call(damageBlockEvent);

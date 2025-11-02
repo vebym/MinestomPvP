@@ -5,7 +5,6 @@ import io.github.togar2.pvp.feature.attack.VanillaAttackFeature;
 import io.github.togar2.pvp.feature.attack.VanillaCriticalFeature;
 import io.github.togar2.pvp.feature.attack.VanillaSweepingFeature;
 import io.github.togar2.pvp.feature.attributes.VanillaEquipmentFeature;
-import io.github.togar2.pvp.feature.block.LegacyVanillaBlockFeature;
 import io.github.togar2.pvp.feature.block.VanillaBlockFeature;
 import io.github.togar2.pvp.feature.config.CombatConfiguration;
 import io.github.togar2.pvp.feature.config.DefinedFeature;
@@ -25,13 +24,17 @@ import io.github.togar2.pvp.feature.item.VanillaItemDamageFeature;
 import io.github.togar2.pvp.feature.knockback.FairKnockbackFeature;
 import io.github.togar2.pvp.feature.knockback.VanillaKnockbackFeature;
 import io.github.togar2.pvp.feature.potion.VanillaPotionFeature;
-import io.github.togar2.pvp.feature.projectile.*;
+import io.github.togar2.pvp.feature.projectile.VanillaBowFeature;
+import io.github.togar2.pvp.feature.projectile.VanillaCrossbowFeature;
+import io.github.togar2.pvp.feature.projectile.VanillaFishingRodFeature;
+import io.github.togar2.pvp.feature.projectile.VanillaMiscProjectileFeature;
+import io.github.togar2.pvp.feature.projectile.VanillaProjectileItemFeature;
+import io.github.togar2.pvp.feature.projectile.VanillaTridentFeature;
 import io.github.togar2.pvp.feature.provider.DifficultyProvider;
 import io.github.togar2.pvp.feature.spectate.VanillaSpectateFeature;
 import io.github.togar2.pvp.feature.state.VanillaPlayerStateFeature;
 import io.github.togar2.pvp.feature.totem.VanillaTotemFeature;
 import io.github.togar2.pvp.feature.tracking.VanillaDeathMessageFeature;
-import io.github.togar2.pvp.utils.CombatVersion;
 
 import java.util.List;
 
@@ -47,15 +50,15 @@ public class CombatFeatures {
 	/**
 	 * @see VanillaArmorFeature
 	 */
-	public static final DefinedFeature<VanillaArmorFeature> VANILLA_ARMOR = VanillaArmorFeature.DEFINED;
+	public static final DefinedFeature<VanillaArmorFeature> VANILLA_ARMOR = VanillaArmorFeature.MODERN;
 	/**
 	 * @see VanillaAttackFeature
 	 */
-	public static final DefinedFeature<VanillaAttackFeature> VANILLA_ATTACK = VanillaAttackFeature.DEFINED;
+	public static final DefinedFeature<VanillaAttackFeature> VANILLA_ATTACK = VanillaAttackFeature.MODERN;
 	/**
 	 * @see VanillaCriticalFeature
 	 */
-	public static final DefinedFeature<VanillaCriticalFeature> VANILLA_CRITICAL = VanillaCriticalFeature.DEFINED;
+	public static final DefinedFeature<VanillaCriticalFeature> VANILLA_CRITICAL = VanillaCriticalFeature.MODERN;
 	/**
 	 * @see VanillaSweepingFeature
 	 */
@@ -63,15 +66,15 @@ public class CombatFeatures {
 	/**
 	 * @see VanillaEquipmentFeature
 	 */
-	public static final DefinedFeature<VanillaEquipmentFeature> VANILLA_EQUIPMENT = VanillaEquipmentFeature.DEFINED;
+	public static final DefinedFeature<VanillaEquipmentFeature> VANILLA_EQUIPMENT = VanillaEquipmentFeature.MODERN;
 	/**
 	 * @see VanillaBlockFeature
 	 */
-	public static final DefinedFeature<VanillaBlockFeature> VANILLA_BLOCK = VanillaBlockFeature.DEFINED;
+	public static final DefinedFeature<VanillaBlockFeature> VANILLA_BLOCK = VanillaBlockFeature.MODERN;
 	/**
 	 * @see VanillaAttackCooldownFeature
 	 */
-	public static final DefinedFeature<VanillaAttackCooldownFeature> VANILLA_ATTACK_COOLDOWN = VanillaAttackCooldownFeature.DEFINED;
+	public static final DefinedFeature<VanillaAttackCooldownFeature> VANILLA_ATTACK_COOLDOWN = VanillaAttackCooldownFeature.MODERN;
 	/**
 	 * @see VanillaItemCooldownFeature
 	 */
@@ -79,11 +82,11 @@ public class CombatFeatures {
 	/**
 	 * @see VanillaDamageFeature
 	 */
-	public static final DefinedFeature<VanillaDamageFeature> VANILLA_DAMAGE = VanillaDamageFeature.DEFINED;
+	public static final DefinedFeature<VanillaDamageFeature> VANILLA_DAMAGE = VanillaDamageFeature.MODERN;
 	/**
 	 * @see VanillaEffectFeature
 	 */
-	public static final DefinedFeature<VanillaEffectFeature> VANILLA_EFFECT = VanillaEffectFeature.DEFINED;
+	public static final DefinedFeature<VanillaEffectFeature> VANILLA_EFFECT = VanillaEffectFeature.MODERN;
 	/**
 	 * @see VanillaEnchantmentFeature
 	 */
@@ -153,7 +156,7 @@ public class CombatFeatures {
 	 */
 	public static final DefinedFeature<VanillaSpectateFeature> VANILLA_SPECTATE = VanillaSpectateFeature.DEFINED;
 	/**
-     * @see VanillaPlayerStateFeature
+      * @see VanillaPlayerStateFeature
 	 */
 	public static final DefinedFeature<VanillaPlayerStateFeature> VANILLA_PLAYER_STATE = VanillaPlayerStateFeature.DEFINED;
 	/**
@@ -165,11 +168,7 @@ public class CombatFeatures {
 	 */
 	public static final DefinedFeature<VanillaDeathMessageFeature> VANILLA_DEATH_MESSAGE = VanillaDeathMessageFeature.DEFINED;
 	
-	/**
-	 * @see LegacyVanillaBlockFeature
-	 */
-	public static final DefinedFeature<LegacyVanillaBlockFeature> LEGACY_VANILLA_BLOCK = LegacyVanillaBlockFeature.SHIELD;
-	
+
 	/**
 	 * @see FairKnockbackFeature
 	 */
@@ -178,22 +177,64 @@ public class CombatFeatures {
 	 * @see FairKnockbackFeature
 	 */
 	public static final DefinedFeature<FairKnockbackFeature> FAIR_RISING_FALLING_KNOCKBACK = FairKnockbackFeature.RISING_AND_FALLING;
-	
+
+	/**
+	 * @see VanillaEquipmentFeature
+	 */
+	public static final DefinedFeature<VanillaEquipmentFeature> LEGACY_EQUIPMENT = VanillaEquipmentFeature.LEGACY;
+	/**
+	 * @see VanillaArmorFeature
+	 */
+	public static final DefinedFeature<VanillaArmorFeature> LEGACY_ARMOR = VanillaArmorFeature.LEGACY;
+	/**
+	 * @see VanillaAttackFeature
+	 */
+	public static final DefinedFeature<VanillaAttackFeature> LEGACY_ATTACK = VanillaAttackFeature.LEGACY;
+	/**
+	 * @see VanillaCriticalFeature
+	 */
+	public static final DefinedFeature<VanillaCriticalFeature> LEGACY_CRITICAL = VanillaCriticalFeature.LEGACY;
+	/**
+	 * @see VanillaBlockFeature
+	 */
+	public static final DefinedFeature<VanillaBlockFeature> LEGACY_BLOCK = VanillaBlockFeature.LEGACY;
+	/**
+	 * @see VanillaAttackCooldownFeature
+	 */
+	public static final DefinedFeature<VanillaAttackCooldownFeature> LEGACY_ATTACK_COOLDOWN = VanillaAttackCooldownFeature.LEGACY;
+	/**
+	 * @see VanillaDamageFeature
+	 */
+	public static final DefinedFeature<VanillaDamageFeature> LEGACY_DAMAGE = VanillaDamageFeature.LEGACY;
+
 	private static final List<DefinedFeature<?>> VANILLA = List.of(
-			VANILLA_ARMOR, VANILLA_ATTACK, VANILLA_CRITICAL, VANILLA_SWEEPING,
-			VANILLA_EQUIPMENT, VANILLA_BLOCK, VANILLA_ATTACK_COOLDOWN, VANILLA_ITEM_COOLDOWN,
-			VANILLA_DAMAGE, VANILLA_EFFECT, VANILLA_ENCHANTMENT, VANILLA_EXPLOSION,
-			VANILLA_EXPLOSIVE, VANILLA_FALL, VANILLA_EXHAUSTION, VANILLA_FOOD,
-			VANILLA_REGENERATION, VANILLA_ITEM_DAMAGE, VANILLA_KNOCKBACK, VANILLA_POTION,
-			VANILLA_BOW, VANILLA_CROSSBOW, VANILLA_FISHING_ROD, VANILLA_MISC_PROJECTILE,
-			VANILLA_PROJECTILE_ITEM, VANILLA_TRIDENT, VANILLA_SPECTATE, VANILLA_PLAYER_STATE,
-			VANILLA_TOTEM, VANILLA_DEATH_MESSAGE
+		VANILLA_ARMOR, VANILLA_ATTACK, VANILLA_CRITICAL, VANILLA_SWEEPING,
+		VANILLA_EQUIPMENT, VANILLA_BLOCK, VANILLA_ATTACK_COOLDOWN, VANILLA_ITEM_COOLDOWN,
+		VANILLA_DAMAGE, VANILLA_EFFECT, VANILLA_ENCHANTMENT, VANILLA_EXPLOSION,
+		VANILLA_EXPLOSIVE, VANILLA_FALL, VANILLA_EXHAUSTION, VANILLA_FOOD,
+		VANILLA_REGENERATION, VANILLA_ITEM_DAMAGE, VANILLA_KNOCKBACK, VANILLA_POTION,
+		VANILLA_BOW, VANILLA_CROSSBOW, VANILLA_FISHING_ROD, VANILLA_MISC_PROJECTILE,
+		VANILLA_PROJECTILE_ITEM, VANILLA_TRIDENT, VANILLA_SPECTATE, VANILLA_PLAYER_STATE,
+		VANILLA_TOTEM, VANILLA_DEATH_MESSAGE
 	);
-	
-	private static final CombatFeatureSet MODERN_VANILLA = getVanilla(CombatVersion.MODERN, DifficultyProvider.DEFAULT).build();
-	
-	private static final CombatFeatureSet LEGACY_VANILLA = getVanilla(CombatVersion.LEGACY, DifficultyProvider.DEFAULT)
-			.add(LEGACY_VANILLA_BLOCK)
+
+	private static final List<DefinedFeature<?>> LEGACY = List.of(
+		LEGACY_ARMOR, LEGACY_ATTACK, LEGACY_CRITICAL,
+		VANILLA_EQUIPMENT, VANILLA_BLOCK, LEGACY_ATTACK_COOLDOWN, LEGACY_DAMAGE,
+		VANILLA_EFFECT, VANILLA_ENCHANTMENT, VANILLA_EXPLOSION,
+		VANILLA_EXPLOSIVE, VANILLA_FALL, VANILLA_EXHAUSTION,
+		VANILLA_FOOD, VANILLA_REGENERATION, VANILLA_ITEM_DAMAGE,
+		VANILLA_KNOCKBACK, VANILLA_POTION, VANILLA_BOW,
+		VANILLA_FISHING_ROD, VANILLA_MISC_PROJECTILE, VANILLA_PROJECTILE_ITEM,
+		VANILLA_SPECTATE, VANILLA_PLAYER_STATE, VANILLA_DEATH_MESSAGE
+	); // TODO update all with their LEGACY variant
+
+	private static final CombatFeatureSet MODERN_VANILLA =
+		getVanilla(DifficultyProvider.DEFAULT)
+			.build();
+
+	private static final CombatFeatureSet LEGACY_VANILLA =
+		getLegacy(DifficultyProvider.DEFAULT)
 			.build();
 	
 	/**
@@ -217,16 +258,27 @@ public class CombatFeatures {
 	/**
 	 * Returns a feature set with all features for the given combat version and difficulty provider.
 	 *
-	 * @param version the combat version
 	 * @param difficultyProvider the difficulty provider
 	 * @return the {@link CombatFeatureSet} with all features
 	 */
-	public static CombatConfiguration getVanilla(CombatVersion version, DifficultyProvider difficultyProvider) {
+	public static CombatConfiguration getVanilla(DifficultyProvider difficultyProvider) {
 		return new CombatConfiguration()
-				.version(version).difficulty(difficultyProvider)
-				.addAll(VANILLA);
+			.difficulty(difficultyProvider)
+			.addAll(VANILLA);
 	}
-	
+
+	/**
+	 * Returns a feature set with all features for the given combat version and difficulty provider.
+	 *
+	 * @param difficultyProvider the difficulty provider
+	 * @return the {@link CombatFeatureSet} with all features
+	 */
+	public static CombatConfiguration getLegacy(DifficultyProvider difficultyProvider) {
+		return new CombatConfiguration()
+			.difficulty(difficultyProvider)
+			.addAll(LEGACY);
+	}
+
 	/**
 	 * Utility method to get an empty {@link CombatConfiguration} to which features can be added.
 	 *

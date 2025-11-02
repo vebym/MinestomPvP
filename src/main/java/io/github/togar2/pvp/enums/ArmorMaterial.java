@@ -1,6 +1,5 @@
 package io.github.togar2.pvp.enums;
 
-import io.github.togar2.pvp.utils.CombatVersion;
 import io.github.togar2.pvp.utils.ModifierId;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.component.DataComponents;
@@ -41,8 +40,8 @@ public enum ArmorMaterial {
 		this.knockbackResistance = knockbackResistance;
 		this.items = items;
 	}
-	
-	public int getProtectionAmount(EquipmentSlot slot, CombatVersion version) {
+
+	public int getProtectionAmount(EquipmentSlot slot, boolean legacy) {
 		int id;
 		switch (slot) {
 			case HELMET -> id = 3;
@@ -53,10 +52,10 @@ public enum ArmorMaterial {
 				return 0;
 			}
 		}
-		
-		return version.legacy() ? this.legacyProtectionAmounts[id] : this.protectionAmounts[id];
+
+		return legacy ? this.legacyProtectionAmounts[id] : this.protectionAmounts[id];
 	}
-	
+
 	public SoundEvent getEquipSound() {
 		return this.equipSound;
 	}
@@ -69,8 +68,13 @@ public enum ArmorMaterial {
 		return this.knockbackResistance;
 	}
 	
-	public static void updateEquipmentAttributes(LivingEntity entity, ItemStack oldStack, ItemStack newStack,
-	                                             EquipmentSlot slot, CombatVersion version) {
+	public static void updateEquipmentAttributes(
+		LivingEntity entity,
+		ItemStack oldStack,
+		ItemStack newStack,
+		EquipmentSlot slot,
+		boolean legacy
+	) {
 		ArmorMaterial oldMaterial = fromMaterial(oldStack.material());
 		ArmorMaterial newMaterial = fromMaterial(newStack.material());
 		
@@ -88,7 +92,7 @@ public enum ArmorMaterial {
 		// Add attributes from new armor
 		if (newMaterial != null && hasDefaultAttributes(newStack)) {
 			if (slot == getRequiredSlot(newStack.material())) {
-				entity.getAttribute(Attribute.ARMOR).addModifier(new AttributeModifier(modifierId, newMaterial.getProtectionAmount(slot, version), AttributeOperation.ADD_VALUE));
+				entity.getAttribute(Attribute.ARMOR).addModifier(new AttributeModifier(modifierId, newMaterial.getProtectionAmount(slot, legacy), AttributeOperation.ADD_VALUE));
 				entity.getAttribute(Attribute.ARMOR_TOUGHNESS).addModifier(new AttributeModifier(modifierId, newMaterial.getToughness(), AttributeOperation.ADD_VALUE));
 				if (newMaterial.getKnockbackResistance() > 0) {
 					entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE).addModifier(new AttributeModifier(modifierId, newMaterial.getKnockbackResistance(), AttributeOperation.ADD_VALUE));

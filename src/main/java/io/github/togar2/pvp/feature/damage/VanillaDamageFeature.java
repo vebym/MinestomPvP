@@ -15,7 +15,6 @@ import io.github.togar2.pvp.feature.knockback.KnockbackFeature;
 import io.github.togar2.pvp.feature.provider.DifficultyProvider;
 import io.github.togar2.pvp.feature.totem.TotemFeature;
 import io.github.togar2.pvp.feature.tracking.TrackingFeature;
-import io.github.togar2.pvp.utils.CombatVersion;
 import io.github.togar2.pvp.utils.EntityUtil;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -45,11 +44,20 @@ import java.util.concurrent.ThreadLocalRandom;
  * Supports blocking, knockback, totems, armor, etc.
  */
 public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
-	public static final DefinedFeature<VanillaDamageFeature> DEFINED = new DefinedFeature<>(
-			FeatureType.DAMAGE, VanillaDamageFeature::new,
-			FeatureType.DIFFICULTY, FeatureType.BLOCK, FeatureType.ARMOR, FeatureType.TOTEM,
-			FeatureType.EXHAUSTION, FeatureType.KNOCKBACK, FeatureType.TRACKING,
-			FeatureType.ITEM_DAMAGE, FeatureType.VERSION
+	public static final DefinedFeature<VanillaDamageFeature> MODERN = new DefinedFeature<>(
+		FeatureType.DAMAGE,
+		config -> new VanillaDamageFeature(config, false),
+		FeatureType.DIFFICULTY, FeatureType.BLOCK, FeatureType.ARMOR,
+		FeatureType.TOTEM, FeatureType.EXHAUSTION, FeatureType.KNOCKBACK,
+		FeatureType.TRACKING, FeatureType.ITEM_DAMAGE
+	);
+
+	public static final DefinedFeature<VanillaDamageFeature> LEGACY = new DefinedFeature<>(
+		FeatureType.DAMAGE,
+		config -> new VanillaDamageFeature(config, true),
+		FeatureType.DIFFICULTY, FeatureType.BLOCK, FeatureType.ARMOR,
+		FeatureType.TOTEM, FeatureType.EXHAUSTION, FeatureType.KNOCKBACK,
+		FeatureType.TRACKING, FeatureType.ITEM_DAMAGE
 	);
 
 	public static final Tag<Long> NEW_DAMAGE_TIME =
@@ -61,6 +69,7 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 			.defaultValue(0.0f);
 
 	private final FeatureConfiguration configuration;
+	private final boolean legacy;
 
 	private DifficultyProvider difficultyProvider;
 
@@ -72,10 +81,9 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 	private TrackingFeature trackingFeature;
 	private ItemDamageFeature itemDamageFeature;
 
-	private CombatVersion version;
-
-	public VanillaDamageFeature(FeatureConfiguration configuration) {
+	public VanillaDamageFeature(FeatureConfiguration configuration, boolean legacy) {
 		this.configuration = configuration;
+		this.legacy = legacy;
 	}
 
 	@Override
@@ -88,7 +96,6 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 		this.knockbackFeature = configuration.get(FeatureType.KNOCKBACK);
 		this.trackingFeature = configuration.get(FeatureType.TRACKING);
 		this.itemDamageFeature = configuration.get(FeatureType.ITEM_DAMAGE);
-		this.version = configuration.get(FeatureType.VERSION);
 	}
 
 	@Override
@@ -177,7 +184,7 @@ public class VanillaDamageFeature implements DamageFeature, RegistrableFeature {
 		}
 
 		// Register damage to tracking feature
-		boolean register = version.legacy() || amount > 0;
+		boolean register = legacy || amount > 0;
 		if (register && player != null) {
 			trackingFeature.recordDamage(player, attacker, damage);
 		}
