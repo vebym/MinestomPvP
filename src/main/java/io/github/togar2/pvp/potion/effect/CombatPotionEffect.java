@@ -3,7 +3,7 @@ package io.github.togar2.pvp.potion.effect;
 import io.github.togar2.pvp.enchantment.EntityGroup;
 import io.github.togar2.pvp.feature.food.ExhaustionFeature;
 import io.github.togar2.pvp.feature.food.FoodFeature;
-import it.unimi.dsi.fastutil.Pair;
+import io.github.togar2.pvp.utils.Pair;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.color.AlphaColor;
 import net.minestom.server.color.Color;

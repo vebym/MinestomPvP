@@ -63,8 +63,8 @@ public class VanillaEffectFeature implements EffectFeature, RegistrableFeature {
 	private final FeatureConfiguration configuration;
 	private final CombatPotionRegistry potionRegistry;
 
-	private ExhaustionFeature exhaustionFeature;
-	private FoodFeature foodFeature;
+	protected ExhaustionFeature exhaustionFeature;
+	protected FoodFeature foodFeature;
 
 	public VanillaEffectFeature(FeatureConfiguration configuration) {
 		this(configuration, VanillaPotionRegistry.get());

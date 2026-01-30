@@ -1,6 +1,5 @@
 package io.github.togar2.pvp.potion.effect;
 
-import io.github.togar2.pvp.utils.CombatVersion;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.potion.PotionEffect;
 
@@ -10,12 +9,12 @@ public class GlowingPotionEffect extends CombatPotionEffect {
 	}
 	
 	@Override
-	public void onApplied(LivingEntity entity, int amplifier, CombatVersion version) {
+	public void apply(LivingEntity entity, int amplifier) {
 		entity.setGlowing(true);
 	}
 	
 	@Override
-	public void onRemoved(LivingEntity entity, int amplifier, CombatVersion version) {
+	public void remove(LivingEntity entity, int amplifier) {
 		entity.setGlowing(false);
 	}
 }

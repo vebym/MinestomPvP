@@ -16,6 +16,8 @@ import net.minestom.server.entity.metadata.other.FishingHookMeta;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.DoubleUnaryOperator;
+
 // TODO FIXME sending a bobber and swapping items causes an instance != null assertion to fail
 public class FishingBobber extends CustomEntityProjectile {
 
@@ -36,13 +38,16 @@ public class FishingBobber extends CustomEntityProjectile {
 		super(shooter, EntityType.FISHING_BOBBER);
 		this.legacy = legacy;
 		setOwnerEntity(shooter);
-		
+
 		// Custom gravity logic: gravity is applied before movement
 		customGravity = legacy ? 0.04 : 0.03;
-		setAerodynamics(getAerodynamics().withGravity(0));
+		setAerodynamics(getAerodynamics().withGravity(0.0d)); // FIXME
 
 		// Minestom seems to like having wrong values in its registries
-		setAerodynamics(getAerodynamics().withHorizontalAirResistance(0.92).withVerticalAirResistance(0.92));
+		setAerodynamics(getAerodynamics()
+			.withHorizontalAirResistance(0.92d)
+			.withVerticalAirResistance(0.92d)
+		);
 	}
 	
 	@Override

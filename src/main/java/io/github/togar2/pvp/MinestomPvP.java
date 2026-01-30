@@ -5,7 +5,10 @@ import io.github.togar2.pvp.feature.CombatFeatures;
 import io.github.togar2.pvp.feature.config.CombatFeatureRegistry;
 import io.github.togar2.pvp.player.CombatPlayer;
 import io.github.togar2.pvp.player.CombatPlayerImpl;
+import io.github.togar2.pvp.potion.effect.CombatPotionEffect;
 import io.github.togar2.pvp.potion.effect.CombatPotionEffects;
+import io.github.togar2.pvp.potion.item.CombatPotionType;
+import io.github.togar2.pvp.potion.registry.CombatPotionRegistry;
 import io.github.togar2.pvp.utils.AccurateLatencyListener;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
@@ -76,8 +79,7 @@ public class MinestomPvP {
 	public static void init(boolean player, boolean keepAlive) {
 		CombatEnchantments.registerAll();
 		CombatPotionEffects.registerAll();
-		CombatPotionTypes.registerAll();
-		
+
 		CombatFeatureRegistry.init();
 		
 		CombatPlayer.init(MinecraftServer.getGlobalEventHandler());
