@@ -3,30 +3,32 @@ package io.github.togar2.pvp.potion.item;
 import io.github.togar2.pvp.utils.CombatVersion;
 import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionType;
+import org.jetbrains.annotations.NotNullByDefault;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
+import java.util.Objects;
 
-public class CombatPotionType {
-	private final PotionType potionType;
-	private final List<Potion> effects;
-	private List<Potion> legacyEffects;
-	
+@NotNullByDefault
+public record CombatPotionType(
+	PotionType potionType,
+	@Unmodifiable
+	List<Potion> effects
+) {
+
+	public static final CombatPotionType NO_OP = new CombatPotionType(PotionType.MUNDANE);
+
 	public CombatPotionType(PotionType potionType, Potion... effects) {
-		this.potionType = potionType;
-		this.effects = List.of(effects);
+		this(Objects.requireNonNull(potionType), List.of(effects));
 	}
-	
-	public CombatPotionType legacy(Potion... effects) {
-		legacyEffects = List.of(effects);
-		return this;
-	}
-	
+
 	public PotionType getPotionType() {
 		return potionType;
 	}
-	
-	public List<Potion> getEffects(CombatVersion version) {
-		if (legacyEffects == null) return effects;
-		return version.legacy() ? legacyEffects : effects;
+
+	@Unmodifiable
+	public List<Potion> getEffects() {
+		//noinspection AssignmentOrReturnOfFieldWithMutableType
+		return effects;
 	}
 }

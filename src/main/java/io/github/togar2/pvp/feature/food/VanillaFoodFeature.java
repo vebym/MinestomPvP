@@ -5,7 +5,7 @@ import io.github.togar2.pvp.feature.RegistrableFeature;
 import io.github.togar2.pvp.feature.config.DefinedFeature;
 import io.github.togar2.pvp.feature.config.FeatureConfiguration;
 import io.github.togar2.pvp.feature.cooldown.ItemCooldownFeature;
-import io.github.togar2.pvp.utils.PotionFlags;
+import io.github.togar2.pvp.utils.PotionFlagsUtil;
 import io.github.togar2.pvp.utils.ViewUtil;
 import net.kyori.adventure.sound.Sound;
 import net.minestom.server.component.DataComponents;
@@ -125,7 +125,7 @@ public class VanillaFoodFeature implements FoodFeature, RegistrableFeature {
 			SuspiciousStewEffects effects = stack.get(DataComponents.SUSPICIOUS_STEW_EFFECTS);
 			assert effects != null;
 			for (SuspiciousStewEffects.Effect effect : effects.effects()) {
-				player.addEffect(new Potion(effect.id(), (byte) 0, effect.durationTicks(), PotionFlags.defaultFlags()));
+				player.addEffect(new Potion(effect.id(), (byte) 0, effect.durationTicks(), PotionFlagsUtil.defaultFlags()));
 			}
 		}
 		
@@ -202,7 +202,7 @@ public class VanillaFoodFeature implements FoodFeature, RegistrableFeature {
 					entity.addEffect(new Potion(
 							potionEffect.id(), (byte)potionEffect.amplifier(),
 							potionEffect.duration(),
-							PotionFlags.create(
+							PotionFlagsUtil.create(
 									potionEffect.isAmbient(),
 									potionEffect.showParticles(),
 									potionEffect.showIcon()

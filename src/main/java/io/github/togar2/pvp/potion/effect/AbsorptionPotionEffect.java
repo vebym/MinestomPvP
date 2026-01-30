@@ -1,30 +1,32 @@
 package io.github.togar2.pvp.potion.effect;
 
-import io.github.togar2.pvp.utils.CombatVersion;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.Player;
 import net.minestom.server.potion.PotionEffect;
 
 public class AbsorptionPotionEffect extends CombatPotionEffect {
+
 	public AbsorptionPotionEffect() {
 		super(PotionEffect.ABSORPTION);
 	}
 	
 	@Override
-	public void onApplied(LivingEntity entity, int amplifier, CombatVersion version) {
+	public void apply(LivingEntity entity, int amplifier) {
 		if (entity instanceof Player player) {
-			player.setAdditionalHearts(player.getAdditionalHearts() + (float) (4 * (amplifier + 1)));
+			player.setAdditionalHearts(player.getAdditionalHearts() + (4 * (amplifier + 1)));
 		}
 		
-		super.onApplied(entity, amplifier, version);
+		super.apply(entity, amplifier);
 	}
 	
 	@Override
-	public void onRemoved(LivingEntity entity, int amplifier, CombatVersion version) {
+	public void remove(LivingEntity entity, int amplifier) {
 		if (entity instanceof Player player) {
-			player.setAdditionalHearts(Math.max(player.getAdditionalHearts() - (float) (4 * (amplifier + 1)), 0));
+			player.setAdditionalHearts(
+				Math.max(0, player.getAdditionalHearts() - (4 * (amplifier + 1)))
+			);
 		}
 		
-		super.onRemoved(entity, amplifier, version);
+		super.remove(entity, amplifier);
 	}
 }

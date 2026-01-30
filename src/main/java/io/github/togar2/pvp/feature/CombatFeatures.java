@@ -1,6 +1,8 @@
 package io.github.togar2.pvp.feature;
 
+import io.github.togar2.pvp.feature.armor.ArmorFeature;
 import io.github.togar2.pvp.feature.armor.VanillaArmorFeature;
+import io.github.togar2.pvp.feature.armor.VanillaArmorFeature_1_8;
 import io.github.togar2.pvp.feature.attack.VanillaAttackFeature;
 import io.github.togar2.pvp.feature.attack.VanillaCriticalFeature;
 import io.github.togar2.pvp.feature.attack.VanillaSweepingFeature;
@@ -50,7 +52,7 @@ public class CombatFeatures {
 	/**
 	 * @see VanillaArmorFeature
 	 */
-	public static final DefinedFeature<VanillaArmorFeature> VANILLA_ARMOR = VanillaArmorFeature.MODERN;
+	public static final DefinedFeature<ArmorFeature> VANILLA_ARMOR = VanillaArmorFeature.DEFINED;
 	/**
 	 * @see VanillaAttackFeature
 	 */
@@ -185,7 +187,7 @@ public class CombatFeatures {
 	/**
 	 * @see VanillaArmorFeature
 	 */
-	public static final DefinedFeature<VanillaArmorFeature> LEGACY_ARMOR = VanillaArmorFeature.LEGACY;
+	public static final DefinedFeature<ArmorFeature> LEGACY_ARMOR = VanillaArmorFeature_1_8.DEFINED;
 	/**
 	 * @see VanillaAttackFeature
 	 */

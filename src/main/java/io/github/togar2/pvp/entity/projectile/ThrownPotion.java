@@ -5,7 +5,11 @@ import io.github.togar2.pvp.utils.EffectUtil;
 import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.*;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityType;
+import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.LivingEntity;
+import net.minestom.server.entity.Player;
 import net.minestom.server.entity.metadata.item.LingeringPotionMeta;
 import net.minestom.server.entity.metadata.item.SplashPotionMeta;
 import net.minestom.server.item.ItemStack;
@@ -82,7 +86,7 @@ public class ThrownPotion extends CustomEntityProjectile implements ItemHoldingP
 				.filter(entity -> boundingBox.intersectEntity(getPosition().add(0, -2, 0), entity))
 				.filter(entity -> entity instanceof LivingEntity
 						&& !(entity instanceof Player player && player.getGameMode() == GameMode.SPECTATOR))
-				.map(entity -> (LivingEntity) entity).collect(Collectors.toList());
+				.map(LivingEntity.class::cast).collect(Collectors.toList());
 		
 		if (hitEntity instanceof LivingEntity && !entities.contains(hitEntity))
 			entities.add((LivingEntity) hitEntity);
@@ -92,10 +96,13 @@ public class ThrownPotion extends CustomEntityProjectile implements ItemHoldingP
 			if (entity.getEntityType() == EntityType.ARMOR_STAND) continue;
 			
 			double distanceSquared = getDistanceSquared(entity);
-			if (distanceSquared >= 16.0) continue;
-			
-			double proximity = entity == hitEntity ? 1.0 : (1.0 - Math.sqrt(distanceSquared) / 4.0);
-			effectFeature.addSplashPotionEffects(entity, potionContents, proximity, this, getShooter());
+			if (distanceSquared < 16.0) {
+				effectFeature.addSplashPotionEffects(
+					entity, potionContents,
+					this, getShooter(),
+					hitEntity == entity
+				);
+			}
 		}
 	}
 	

@@ -30,8 +30,8 @@ public interface EffectFeature extends CombatFeature {
 		
 		@Override public void updatePotionVisibility(LivingEntity entity) {}
 		@Override public void addArrowEffects(LivingEntity entity, Arrow arrow) {}
-		@Override public void addSplashPotionEffects(LivingEntity entity, PotionContents potionContents, double proximity,
-		                                             @Nullable Entity source, @Nullable Entity attacker) {}
+		@Override public void addSplashPotionEffects(LivingEntity target, PotionContents potionContents,
+									   @Nullable Entity source, @Nullable Entity attacker, boolean directHit) {}
 	};
 	
 	int getPotionColor(PotionContents contents);
@@ -60,14 +60,18 @@ public interface EffectFeature extends CombatFeature {
 	
 	/**
 	 * Applies the effects of a splash potion to an entity.
-	 * The proximity is usually calculated following: {@code 1.0 - Math.sqrt(distanceSquared) / 4.0}
 	 *
-	 * @param entity         the entity which was hit
+	 * @param target         the entity which was hit
 	 * @param potionContents the potion contents of the splash potion
-	 * @param proximity      the proximity of the potion to the entity
 	 * @param source         the direct source of the splash (usually the splash potion)
 	 * @param attacker       the attacker of the splash (usually the thrower)
+	 * @param directHit      if the potion landed on the target
 	 */
-	void addSplashPotionEffects(LivingEntity entity, PotionContents potionContents, double proximity,
-	                            @Nullable Entity source, @Nullable Entity attacker);
+	void addSplashPotionEffects(
+		LivingEntity target,
+		PotionContents potionContents,
+		Entity source,
+		@Nullable Entity attacker,
+		boolean directHit
+	);
 }

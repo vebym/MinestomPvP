@@ -11,11 +11,14 @@ import net.minestom.server.entity.attribute.AttributeOperation;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+// TODO make it a feature, to enable multiple registry values depending
+//  on which version we want them to be.
 public enum ArmorMaterial {
 	LEATHER(new int[]{1, 2, 3, 1}, new int[]{1, 3, 2, 1}, SoundEvent.ITEM_ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, Material.LEATHER_BOOTS, Material.LEATHER_LEGGINGS, Material.LEATHER_CHESTPLATE, Material.LEATHER_HELMET),
 	CHAIN(new int[]{1, 4, 5, 2}, new int[]{2, 5, 4, 1}, SoundEvent.ITEM_ARMOR_EQUIP_CHAIN, 0.0F, 0.0F, Material.CHAINMAIL_BOOTS, Material.CHAINMAIL_LEGGINGS, Material.CHAINMAIL_CHESTPLATE, Material.CHAINMAIL_HELMET),
@@ -56,6 +59,22 @@ public enum ArmorMaterial {
 		return legacy ? this.legacyProtectionAmounts[id] : this.protectionAmounts[id];
 	}
 
+	/**
+	 * Example: if you call {@code NETHERITE.matches(Material.NETHERITE_BOOTS)}
+	 * it will return true.
+	 * @param material armor to check
+	 * @return if {@code material} is an armor of this type
+	 */
+	public boolean matches(Material material) {
+		for (Material armor : items) {
+			// instance comparison for static objects
+			if (armor == material) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public SoundEvent getEquipSound() {
 		return this.equipSound;
 	}
@@ -81,38 +100,58 @@ public enum ArmorMaterial {
 		Key modifierId = getModifierId(slot);
 		
 		// Remove attributes from previous armor
-		if (oldMaterial != null && hasDefaultAttributes(oldStack)) {
-			if (slot == getRequiredSlot(oldStack.material())) {
-				entity.getAttribute(Attribute.ARMOR).removeModifier(modifierId);
-				entity.getAttribute(Attribute.ARMOR_TOUGHNESS).removeModifier(modifierId);
-				entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE).removeModifier(modifierId);
-			}
+		if (oldMaterial != null &&
+			hasDefaultAttributes(oldStack) &&
+			slot == getRequiredSlot(oldStack.material())
+		) {
+			entity.getAttribute(Attribute.ARMOR).removeModifier(modifierId);
+			entity.getAttribute(Attribute.ARMOR_TOUGHNESS).removeModifier(modifierId);
+			entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE).removeModifier(modifierId);
 		}
 		
 		// Add attributes from new armor
-		if (newMaterial != null && hasDefaultAttributes(newStack)) {
-			if (slot == getRequiredSlot(newStack.material())) {
-				entity.getAttribute(Attribute.ARMOR).addModifier(new AttributeModifier(modifierId, newMaterial.getProtectionAmount(slot, legacy), AttributeOperation.ADD_VALUE));
-				entity.getAttribute(Attribute.ARMOR_TOUGHNESS).addModifier(new AttributeModifier(modifierId, newMaterial.getToughness(), AttributeOperation.ADD_VALUE));
-				if (newMaterial.getKnockbackResistance() > 0) {
-					entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE).addModifier(new AttributeModifier(modifierId, newMaterial.getKnockbackResistance(), AttributeOperation.ADD_VALUE));
-				}
+		if (newMaterial != null &&
+			hasDefaultAttributes(newStack) &&
+			slot == getRequiredSlot(newStack.material())
+		) {
+			entity.getAttribute(Attribute.ARMOR)
+				.addModifier(new AttributeModifier(
+					modifierId,
+					newMaterial.getProtectionAmount(slot, legacy),
+					AttributeOperation.ADD_VALUE
+				));
+
+			entity.getAttribute(Attribute.ARMOR_TOUGHNESS)
+				.addModifier(new AttributeModifier(
+					modifierId,
+					newMaterial.getToughness(),
+					AttributeOperation.ADD_VALUE
+				));
+
+			if (newMaterial.getKnockbackResistance() > 0) {
+				entity.getAttribute(Attribute.KNOCKBACK_RESISTANCE)
+					.addModifier(new AttributeModifier(
+						modifierId,
+						newMaterial.getKnockbackResistance(),
+						AttributeOperation.ADD_VALUE
+					));
 			}
 		}
 	}
 	
 	private static boolean hasDefaultAttributes(ItemStack stack) {
-		// When modifiers tag is not empty, default modifiers are not
-		return !stack.has(DataComponents.ATTRIBUTE_MODIFIERS)
-				|| Objects.requireNonNull(stack.get(DataComponents.ATTRIBUTE_MODIFIERS)).modifiers().isEmpty();
+		if (stack == null) return false;
+		var modifiers = stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
+		return modifiers != null && modifiers.modifiers().isEmpty();
 	}
 	
 	public static EquipmentSlot getRequiredSlot(Material material) {
 		EquipmentSlot slot = material.registry().equipmentSlot();
 		return slot == null ? EquipmentSlot.HELMET : slot;
 	}
-	
-	private static final Map<Material, ArmorMaterial> MATERIAL_TO_ARMOR_MATERIAL = new HashMap<>();
+
+	@Unmodifiable
+	private static final Map<Material, ArmorMaterial> MATERIAL_TO_ARMOR_MATERIAL;
 	
 	public static ArmorMaterial fromMaterial(Material material) {
 		return MATERIAL_TO_ARMOR_MATERIAL.get(material);
@@ -123,10 +162,14 @@ public enum ArmorMaterial {
 	}
 	
 	static {
+		Map<Material, ArmorMaterial> map = HashMap.newHashMap(1000);
+
 		for (ArmorMaterial armorMaterial : values()) {
 			for (Material material : armorMaterial.items) {
-				MATERIAL_TO_ARMOR_MATERIAL.put(material, armorMaterial);
+				map.put(material, armorMaterial);
 			}
 		}
+
+		MATERIAL_TO_ARMOR_MATERIAL = Map.copyOf(map);
 	}
 }

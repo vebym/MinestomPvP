@@ -6,7 +6,6 @@ import io.github.togar2.pvp.feature.config.CombatFeatureRegistry;
 import io.github.togar2.pvp.player.CombatPlayer;
 import io.github.togar2.pvp.player.CombatPlayerImpl;
 import io.github.togar2.pvp.potion.effect.CombatPotionEffects;
-import io.github.togar2.pvp.potion.item.CombatPotionTypes;
 import io.github.togar2.pvp.utils.AccurateLatencyListener;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;

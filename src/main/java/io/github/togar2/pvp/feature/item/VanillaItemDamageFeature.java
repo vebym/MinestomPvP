@@ -41,9 +41,13 @@ public class VanillaItemDamageFeature implements ItemDamageFeature {
 	}
 	
 	protected ItemStack damage(ItemStack stack, int amount) {
-		if (amount == 0 || stack.has(DataComponents.UNBREAKABLE) || stack.get(DataComponents.MAX_DAMAGE, 0) <= 0)
+		if (amount == 0 ||
+			stack.has(DataComponents.UNBREAKABLE) ||
+			stack.get(DataComponents.MAX_DAMAGE, 0) <= 0
+		) {
 			return stack;
-		
+		}
+
 		int preventAmount = 0;
 		int newAmount = amount;
 		
@@ -57,18 +61,27 @@ public class VanillaItemDamageFeature implements ItemDamageFeature {
 		if (newAmount <= 0) return stack;
 		
 		int finalNewAmount = newAmount;
-		return stack.with(DataComponents.DAMAGE, (UnaryOperator<Integer>) d -> d + finalNewAmount);
+		return stack.with(
+			DataComponents.DAMAGE,
+			(UnaryOperator<Integer>) i -> i + finalNewAmount
+		);
 	}
 	
-	protected <T extends LivingEntity> ItemStack damage(ItemStack stack, int amount,
-	                                                    T entity, Consumer<T> breakCallback) {
-		if (amount == 0 || stack.get(DataComponents.MAX_DAMAGE, 0) <= 0)
-			return stack;
-		
+	protected <T extends LivingEntity> ItemStack damage(
+		ItemStack stack,
+		int amount,
+		T entity,
+		Consumer<T> breakCallback
+	) {
 		ItemStack newStack = damage(stack, amount);
-		if (newStack.get(DataComponents.DAMAGE, 0) >= stack.get(DataComponents.MAX_DAMAGE, 0)) {
+		Integer damage = newStack.get(DataComponents.DAMAGE);
+		int maxDamage = stack.get(DataComponents.MAX_DAMAGE, 0);
+
+		if (damage != null && damage >= maxDamage) {
 			breakCallback.accept(entity);
-			newStack = newStack.withAmount(i -> i - 1).with(DataComponents.DAMAGE, 0);
+			return newStack
+				.withAmount(i -> i - 1)
+				.with(DataComponents.DAMAGE, 0);
 		}
 		
 		return newStack;
@@ -76,14 +89,26 @@ public class VanillaItemDamageFeature implements ItemDamageFeature {
 	
 	@Override
 	public void damageEquipment(LivingEntity entity, EquipmentSlot slot, int amount) {
-		EquipmentDamageEvent equipmentDamageEvent = new EquipmentDamageEvent(entity, slot, amount);
-		EventDispatcher.callCancellable(equipmentDamageEvent, () ->
-				entity.setEquipment(slot, damage(entity.getEquipment(slot), amount, entity,
-						e -> triggerEquipmentBreak(e, slot))));
+		var equipmentDamageEvent = new EquipmentDamageEvent(entity, slot, amount);
+		EventDispatcher.callCancellable(
+			equipmentDamageEvent,
+			() -> entity.setEquipment(
+				slot, damage(
+					entity.getEquipment(slot),
+					amount, entity,
+					e -> triggerEquipmentBreak(e, slot)
+				)
+			)
+		);
 	}
 	
 	@Override
-	public void damageArmor(LivingEntity entity, DamageType damageType, float damage, EquipmentSlot... slots) {
+	public void damageArmor(
+		LivingEntity entity,
+		DamageType damageType,
+		float damage,
+		EquipmentSlot... slots
+	) {
 		if (damage <= 0) return;
 		
 		damage /= 4;
@@ -93,9 +118,15 @@ public class VanillaItemDamageFeature implements ItemDamageFeature {
 		
 		for (EquipmentSlot slot : slots) {
 			ItemStack stack = entity.getEquipment(slot);
-			DamageTypeInfo info = DamageTypeInfo.of(MinecraftServer.getDamageTypeRegistry().getKey(damageType));
-			if (!(info.fire() && stack.material().key().value().toLowerCase().contains("netherite"))
-					&& ArmorMaterial.fromMaterial(stack.material()) != null) {
+			DamageTypeInfo info = DamageTypeInfo.of(
+				MinecraftServer.getDamageTypeRegistry()
+					.getKey(damageType)
+			);
+
+			// TODO damage netherite only when the player takes damage, excluding fire/lava
+			if (info.fire() || ArmorMaterial.NETHERITE.matches(stack.material())) continue;
+
+			if (ArmorMaterial.fromMaterial(stack.material()) != null) {
 				damageEquipment(entity, slot, (int) damage);
 			}
 		}
